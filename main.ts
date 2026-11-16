@@ -35,7 +35,13 @@ function main(): void {
   if (!existsSync(gameDir)) throw new Error('main.ts: no game/ directory beside main.ts');
   if (!existsSync(shotsDir)) throw new Error('main.ts: no screenshots/ directory beside main.ts');
 
-  rmSync(outDir, { recursive: true, force: true });
+  // The grader mounts the output directory as a volume: removing the
+  // directory itself fails (EBUSY on the mount point). Clean only its
+  // contents instead, never the directory.
+  mkdirSync(outDir, { recursive: true });
+  for (const name of readdirSync(outDir)) {
+    rmSync(join(outDir, name), { recursive: true, force: true });
+  }
   mkdirSync(join(outDir, 'game'), { recursive: true });
   mkdirSync(join(outDir, 'screenshots'), { recursive: true });
   cpSync(gameDir, join(outDir, 'game'), { recursive: true });
